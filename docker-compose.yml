@@ -1,152 +1,22 @@
-version: "3.7"
+version: "3.9"
 services:
-
-  adminer:
-    image: adminer
-    restart: always
-    ports:
-      - 8090:8080
-
-  user-keycloak:
-    image: quay.io/keycloak/keycloak:17.0.1
-    ports:
-      - 8080:8080
+  db:
+    image: postgres:alpine
+    expose:
+      - 5432
     environment:
-      - KEYCLOAK_ADMIN=admin
-      - KEYCLOAK_ADMIN_PASSWORD=admin
-    command: start-dev
-    
-  user-app:
-    build:
-      context: ../../soa-user-app/.
-      dockerfile: ../../soa-user-app/Dockerfile
-    env_file:
-      - ../../soa-user-app/.env.local
-    ports:
-      - 8000:5000
-  
-  resources-app:
-    build:
-      context: ../../soa-resources-app/.
-      dockerfile: ../../soa-resources-app/Dockerfile
-    env_file:
-      - ../../soa-resources-app/.env.local
-    ports:
-      - 8001:5000
-  
-  resources-app-db:
-    image: postgres:13
-    volumes:
-      - ./data/resources-db:/var/lib/postgresql/data/pgdata
-    environment:
-      - PGDATA=/var/lib/postgresql/data/pgdata
-      - POSTGRES_USER=resources-app
-      - POSTGRES_PASSWORD=resources-app
-      - POSTGRES_DB=resources-app
-    ports:
-     - 5432:5432
- 
-  services-app:
-    build:
-      context: ../../soa-services-app/.
-      dockerfile: ../../soa-services-app/Dockerfile
-    env_file:
-      - ../../soa-services-app/.env.local
-    ports:
-      - 8002:5000
-  
-  services-app-db:
-    image: postgres:13
-    volumes:
-      - ./data/services-db:/var/lib/postgresql/data/pgdata
-    environment:
-      - PGDATA=/var/lib/postgresql/data/pgdata
-      - POSTGRES_USER=services-app
-      - POSTGRES_PASSWORD=services-app
-      - POSTGRES_DB=services-app
-    ports:
-     - 5432:5432
- 
-  shelter-app:
-    build:
-      context: ../../soa-shelter-app/.
-      dockerfile: ../../soa-shelter-app/Dockerfile
-    env_file:
-      - ../../soa-shelter-app/.env.local
-    ports:
-      - 8003:5000
-  
-  shelter-app-db:
-    image: postgres:13
-    volumes:
-      - ./data/shelter-db:/var/lib/postgresql/data/pgdata
-    environment:
-      - PGDATA=/var/lib/postgresql/data/pgdata
-      - POSTGRES_USER=shelter-app
-      - POSTGRES_PASSWORD=shelter-app
-      - POSTGRES_DB=shelter-app
-    ports:
-     - 5432:5432
-   
-  store-app:
-    build:
-      context: ../../soa-store-app/.
-      dockerfile: ../../soa-store-app/Dockerfile
-    env_file:
-      - ../../soa-store-app/.env.local
-    ports:
-      - 8004:5000
-  
-  store-app-db:
-    image: postgres:13
-    volumes:
-      - ./data/store-db:/var/lib/postgresql/data/pgdata
-    environment:
-      - PGDATA=/var/lib/postgresql/data/pgdata
       - POSTGRES_USER=store-app
       - POSTGRES_PASSWORD=store-app
       - POSTGRES_DB=store-app
+
+  api:
+    build: .
+    command: uvicorn main:app --reload --host=0.0.0.0 --port=8004
     ports:
-     - 5432:5432
- 
-  payment-app:
-    build:
-      context: ../../soa-payment-app/.
-      dockerfile: ../../soa-payment-app/Dockerfile
-    env_file:
-      - ../../soa-payment-app/.env.local
-    ports:
-      - 8005:5000
-  
-  payment-app-db:
-    image: postgres:13
+      - 8004:5000
     volumes:
-      - ./data/payment-db:/var/lib/postgresql/data/pgdata
+      - .:/code 
+    depends_on:
+      - db
     environment:
-      - PGDATA=/var/lib/postgresql/data/pgdata
-      - POSTGRES_USER=payment-app
-      - POSTGRES_PASSWORD=payment-app
-      - POSTGRES_DB=payment-app
-    ports:
-     - 5432:5432
- 
-  notifications-app:
-    build:
-      context: ../../soa-notifications-app/.
-      dockerfile: ../../soa-notifications-app/Dockerfile
-    env_file:
-      - ../../soa-notifications-app/.env.local
-    ports:
-      - 8006:5000
-  
-  notifications-app-db:
-    image: postgres:13
-    volumes:
-      - ./data/notifications-db:/var/lib/postgresql/data/pgdata
-    environment:
-      - PGDATA=/var/lib/postgresql/data/pgdata
-      - POSTGRES_USER=notifications-app
-      - POSTGRES_PASSWORD=notifications-app
-      - POSTGRES_DB=notifications-app
-    ports:
-     - 5432:5432
+      - DATABASE_URL=postgresql://store-app:shelter-app@db:5432/store-app
