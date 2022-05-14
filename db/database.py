@@ -12,6 +12,6 @@ DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERV
 
 engine=create_engine(DATABASE_URL, echo=True)
 
-Base=declarative_bases()
+Base = declarative_base()
 
 SessionLocal=sessionmaker(bind=engine)
