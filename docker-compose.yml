@@ -9,14 +9,17 @@ services:
       - POSTGRES_PASSWORD=store-app
       - POSTGRES_DB=store-app
 
-  api:
-    build: .
-    command: uvicorn main:app --reload --host=0.0.0.0 --port=8004
+  store-app:
+    container_name: store-app
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    volumes:
+      - ./:/app
+    env_file:
+      - .env.local
     ports:
       - 8004:5000
-    volumes:
-      - .:/code 
     depends_on:
-      - db
-    environment:
-      - DATABASE_URL=postgresql://store-app:shelter-app@db:5432/store-app
+      - services-app-db
+    restart: on-failureapp

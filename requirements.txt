@@ -1,5 +1,7 @@
 fastapi
 uvicorn
+requests
+dependency-injector
 
 #for template
 jinja2

@@ -24,15 +24,19 @@ class User(Base):
     password = Column(String)
     is_active = Column(Boolean, default=True)
     role = Column(String)
-    shopping_cart_id = Column(Integer, ForeignKey('shopping_cart.id'), unique=True)
     shopping_cart = relationship("ShoppingCart", backref=backref("user", uselist=False))
     orders =  relationship("Order", back_populates="user")
+
+class UserDTO(BaseModel):
+    username: str
+    is_active: bool
+    role: str
 
 class ShoppingCart(Base):
     __tablename__ = "shopping_cart"
 
     id = Column(Integer, primary_key=True, index=True)
-    username = Column(String)
+    username = Column(String, ForeignKey('user.username'), unique=True)
     products = relationship("ProductInShoppingCart", back_populates="shopping_cart")
         
  
@@ -91,9 +95,9 @@ class ProductCreateDTO(BaseModel):
 
 class OrderDTO(BaseModel): #serializer
     username:str
-    status:str
+    order_status:str
     date:str
-    total_price:double
+    total_price:float
 
     class Config:
         orm_mode=True
